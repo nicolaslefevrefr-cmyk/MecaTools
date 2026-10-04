@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atelier Mécanique — pièces normalisées & export STL</title>
+<meta name="description" content="Génère des vis, écrous, engrenages et vis sans fin aux cotes ISO métriques, visualisation 3D et export STL pour l'impression 3D.">
+<meta name="theme-color" content="#f5f7fa">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <button id="btn-lib" class="icon-btn" aria-label="Ouvrir la bibliothèque" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="title">
+      <h1 id="part-title">Atelier Mécanique</h1>
+      <p id="part-std"></p>
+    </div>
+    <button id="btn-install" class="pill" hidden>
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 4v10m0 0l-4-4m4 4l4-4M5 19h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Installer
+    </button>
+    <button id="btn-params" class="icon-btn" aria-label="Ouvrir les paramètres" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9M13 4v6M7 14v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+  </header>
+
+  <main class="stage">
+    <div id="viewport" aria-label="Visualisation 3D de la pièce"></div>
+    <div class="hud" id="hud" aria-live="polite">
+      <span class="chip" id="hud-dims">—</span>
+      <span class="chip" id="hud-mass">—</span>
+      <span class="chip" id="hud-check">…</span>
+    </div>
+    <div class="dock">
+      <div class="warnbar" id="warnbar" hidden></div>
+      <div class="viewbar" role="toolbar" aria-label="Vues">
+        <button data-view="iso" class="vb active" title="Vue isométrique">3D</button>
+        <button data-view="top" class="vb" title="Dessus">Dessus</button>
+        <button data-view="front" class="vb" title="Face">Face</button>
+        <button data-view="side" class="vb" title="Côté">Côté</button>
+        <span class="sep"></span>
+        <button id="tg-wire" class="vb" title="Fil de fer" aria-pressed="false">Filaire</button>
+        <button id="tg-grid" class="vb active" title="Grille" aria-pressed="true">Grille</button>
+      </div>
+      <button id="btn-export" class="cta">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Télécharger STL
+      </button>
+    </div>
+  </main>
+
+  <div id="scrim" hidden></div>
+
+  <aside id="drawer-lib" class="drawer left" aria-label="Bibliothèque de pièces" aria-hidden="true">
+    <div class="drawer-head">
+      <h2>Bibliothèque</h2>
+      <button class="icon-btn close" data-close aria-label="Fermer">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="drawer-body">
+      <input id="lib-search" type="search" placeholder="Rechercher : M8, m0.4, vis sans fin…" autocomplete="off" aria-label="Rechercher une pièce">
+      <div id="lib-list"></div>
+    </div>
+  </aside>
+
+  <aside id="drawer-params" class="drawer right" aria-label="Paramètres de la pièce" aria-hidden="true">
+    <div class="drawer-head">
+      <h2>Paramètres</h2>
+      <button class="icon-btn close" data-close aria-label="Fermer">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="drawer-body" id="params-body"></div>
+    <div class="drawer-foot">
+      <button id="btn-reset" class="ghost">Réinitialiser</button>
+      <button id="btn-export2" class="primary">Télécharger STL</button>
+    </div>
+  </aside>
+</div>
+
+<script src="js/core.js"></script>
+<script src="js/catalog.js"></script>
+<script src="js/threads.js"></script>
+<script src="js/parts-fasteners.js"></script>
+<script src="js/parts-gears.js"></script>
+<script src="js/library.js"></script>
+<script src="js/viewer.bundle.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
