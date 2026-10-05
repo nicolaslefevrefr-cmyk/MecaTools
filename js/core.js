@@ -74,7 +74,7 @@
       if (c.length !== K) throw new Error('Colonnes de tailles différentes (' + c.length + ' ≠ ' + K + ')');
       for (let k = 0; k < K; k++) {
         const rho = c[k][0], z = c[k][1];
-        const a = th[i] + (twist ? twist(z) : 0);
+        const a = th[i] + (twist && !c[k][2] ? twist(z) : 0); // 3e valeur = 1 : point non vrillé (alésage)
         const o = (i * K + k) * 3;
         pos[o] = rho * Math.cos(a);
         pos[o + 1] = rho * Math.sin(a);
@@ -82,8 +82,11 @@
       }
     }
     const idx = [];
-    for (let i = 0; i < n; i++) {
-      const j = (i + 1) % n;
+    // spec.open : anneau ouvert (thetas va de 0 à 2π inclus) — nécessaire pour les surfaces hélicoïdales :
+    // la dernière colonne reprend la première décalée d'un tour d'hélice, la soudure par position referme le maillage.
+    const loops = spec.open ? n - 1 : n;
+    for (let i = 0; i < loops; i++) {
+      const j = spec.open ? i + 1 : (i + 1) % n;
       for (let k = 0; k < K; k++) {
         const k2 = (k + 1) % K;
         const a = i * K + k, b = i * K + k2, c = j * K + k2, d = j * K + k;
@@ -91,6 +94,17 @@
       }
     }
     return MP.finalize(pos, idx);
+  };
+
+  /** Angles d'un anneau ouvert : N pas réguliers de 0 à 2π inclus + angles supplémentaires (rainure). */
+  MP.ringThetas = function (N, extras) {
+    const set = [];
+    for (let i = 0; i <= N; i++) set.push(i * TAU / N);
+    for (let e of extras || []) {
+      e = ((e % TAU) + TAU) % TAU;
+      if (e > 1e-9 && e < TAU - 1e-9 && !set.some((s) => Math.abs(s - e) < 1e-9)) set.push(e);
+    }
+    return set.sort((a, b) => a - b);
   };
 
   /* ---------- Prisme d'un polygone 2D (découpage en oreilles) ---------- */
@@ -180,7 +194,8 @@
     const Q = 1e5;
     for (let v = 0; v < remap.length; v++) {
       const x = pos[v * 3], y = pos[v * 3 + 1], z = pos[v * 3 + 2];
-      const key = Math.round(x * Q) + ',' + Math.round(y * Q) + ',' + Math.round(z * Q);
+      // décalage irrationnel : évite que des cotes « rondes » tombent pile sur une frontière d'arrondi
+      const key = Math.round(x * Q + 0.3719) + ',' + Math.round(y * Q + 0.2863) + ',' + Math.round(z * Q + 0.4127);
       let id = map.get(key);
       if (id === undefined) {
         id = out.length / 3;

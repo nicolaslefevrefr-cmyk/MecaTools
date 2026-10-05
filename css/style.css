@@ -101,3 +101,5 @@ input[type=range] { width: 100%; margin: 8px 0 0; accent-color: var(--accent); }
   .drawer { width: 420px; }
 }
 @media (prefers-reduced-motion: reduce) { .drawer { transition: none; } }
+
+.chk { width: 22px; height: 22px; accent-color: var(--accent); }

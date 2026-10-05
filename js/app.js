@@ -25,7 +25,7 @@
   function loadPart(id, over, presetKey) {
     const P = MP.PARTS[id];
     const p = P.defaults();
-    if (over) { if (over.size && P.fill) { p.size = over.size; P.fill(p); } Object.assign(p, over); }
+    if (over) { if (over.size && P.fill) { p.size = over.size; P.fill(p); } Object.assign(p, over); if (over.bore !== undefined) MP.keyFill(Object.assign(p, over)); Object.assign(p, over); }
     state.part = id; state.params = p; state.preset = presetKey || null;
     renderLibrary(); renderParams(); scheduleBuild(0);
   }
@@ -123,11 +123,14 @@
     let html = '', last = '';
     for (const f of P.params) {
       if (f.section !== last) { html += '<div class="sect">' + esc(f.section) + '</div>'; last = f.section; }
+      if (f.showIf && !f.showIf(p)) continue;
       const v = p[f.key];
       let dot = '';
       if (f.std && table[f.key] !== undefined) dot = '<i class="dot ' + (Math.abs(table[f.key] - v) < 1e-9 ? 'iso' : 'mod') + '" title="' + (Math.abs(table[f.key] - v) < 1e-9 ? 'Cote ISO' : 'Cote modifiée (ISO : ' + fmt(table[f.key]) + ')') + '"></i>';
       let ctl;
-      if (f.type === 'select') {
+      if (f.type === 'check') {
+        ctl = '<input type="checkbox" class="chk" data-k="' + f.key + '"' + (v ? ' checked' : '') + '>';
+      } else if (f.type === 'select') {
         const opts = optionsOf(f, p);
         ctl = '<select data-k="' + f.key + '">' + opts.map((o) => '<option value="' + o.v + '"' + (String(o.v) === String(v) ? ' selected' : '') + '>' + esc(o.label) + '</option>').join('') + '</select>';
       } else {
@@ -164,11 +167,14 @@
   function setParam(k, raw, fromRange) {
     const P = part(), f = P.params.find((x) => x.key === k); if (!f) return;
     let v = raw;
-    if (f.type === 'select') v = (f.numeric ? parseFloat(raw) : raw);
+    if (f.type === 'check') v = !!raw;
+    else if (f.type === 'select') v = (f.numeric ? parseFloat(raw) : raw);
     else { v = parseFloat(String(raw).replace(',', '.')); if (!num(v)) return; v = Math.min(f.max, Math.max(f.min, v)); }
     state.params[k] = v;
     if (k === 'size' && MP.CATALOG.THREADS[v] && 'P' in state.params) state.params.P = MP.CATALOG.THREADS[v].coarse; // pas gros par défaut
     if (k === 'size' && P.fill) { P.fill(state.params); renderParams(); }
+    else if (k === 'key') renderParams();
+    else if (k === 'bore' && P.params.some((x) => x.key === 'key')) { MP.keyFill(state.params); renderParams(); }
     else {
       // synchronise champ numérique et curseur (sauf celui en cours de saisie)
       $$('[data-k="' + k + '"]', $('#params-body')).forEach((el) => { if (el === document.activeElement || el.tagName === 'SELECT') return; el.value = el.type === 'range' ? v : fmt(v); });
@@ -181,7 +187,7 @@
   $('#params-body').addEventListener('input', (e) => {
     const t = e.target;
     if (t.dataset.q !== undefined) return;
-    if (t.dataset.k && t.tagName === 'INPUT') {
+    if (t.dataset.k && t.tagName === 'INPUT' && t.type !== 'checkbox') {
       const v = parseFloat(String(t.value).replace(',', '.'));
       if (num(v)) { const f = part().params.find((x) => x.key === t.dataset.k); if (f && v >= f.min && v <= f.max) setParam(t.dataset.k, v, t.type === 'range'); }
     }
@@ -190,7 +196,8 @@
     const t = e.target;
     if (t.dataset.q !== undefined) { state.quality = t.value; scheduleBuild(0); save(); return; }
     if (!t.dataset.k) return;
-    if (t.tagName === 'SELECT') setParam(t.dataset.k, t.value);
+    if (t.type === 'checkbox') setParam(t.dataset.k, t.checked);
+    else if (t.tagName === 'SELECT') setParam(t.dataset.k, t.value);
     else { setParam(t.dataset.k, t.value); const f = part().params.find((x) => x.key === t.dataset.k); t.value = fmt(state.params[t.dataset.k]); renderLibrary(); }
   });
   $('#btn-reset').addEventListener('click', () => {

@@ -66,6 +66,11 @@
         g('m1.5 · z24 · 20° G', { m: 1.5, z: 24, beta: 20, hand: 'L', b: 16, bore: 8 }),
         g('m2 · z20 · 20° D', { m: 2, z: 20, beta: 20, b: 20, bore: 8 })
       ] },
+      { part: 'key', title: 'Clavette parallèle', std: 'ISO 773 · DIN 6885', presets: [6, 8, 10, 12, 15, 17, 20, 25, 30].map((d) => {
+        const k = MP.keyFor(d), KL = [6, 8, 10, 12, 14, 16, 18, 20, 22, 25, 28, 32, 36, 40, 45, 50, 56, 63, 70, 80];
+        const len = KL.reduce((a, b) => (Math.abs(b - 1.4 * d) < Math.abs(a - 1.4 * d) ? b : a));
+        return { label: 'Ø' + d + ' · ' + k.b + '×' + k.h + '×' + len, over: { size: String(d), l: len } };
+      }) },
       { part: 'rack', title: 'Crémaillère', std: 'ISO 53', presets: [
         g('m0.5 · 30 dents', { m: 0.5, nt: 30, b: 4, body: 3 }),
         g('m1 · 12 dents', { m: 1, nt: 12, b: 8, body: 4 }),

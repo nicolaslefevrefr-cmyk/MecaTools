@@ -1,8 +1,8 @@
 /* Service worker minimal : mise en cache de l'application (hors ligne après la première visite). */
-const CACHE = 'atelier-meca-v1';
+const CACHE = 'atelier-meca-v2';
 const ASSETS = [
   './', 'index.html', 'css/style.css', 'manifest.json',
-  'js/core.js', 'js/catalog.js', 'js/threads.js', 'js/parts-fasteners.js', 'js/parts-gears.js',
+  'js/core.js', 'js/catalog.js', 'js/threads.js', 'js/bore.js', 'js/parts-fasteners.js', 'js/parts-gears.js',
   'js/library.js', 'js/viewer.bundle.js', 'js/app.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png'
 ];
